@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -11,7 +12,10 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 use Doctrine\ORM\Mapping as ORM;
 
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -19,22 +23,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read', 'branch:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user:read', 'user:write', 'branch:read'])]
     private ?string $username = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 10)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $role = null;
 
     #[ORM\OneToMany(targetEntity: StockMovement::class, mappedBy: 'owner')]
     private Collection $stockMovements;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?Branch $branch_id = null;
+    #[ORM\ManyToOne(targetEntity: Branch::class, inversedBy: 'users')]
+    #[Groups(['user:read', 'user:write'])]
+    private ?Branch $branch = null;
 
     public function __construct()
     {
@@ -129,14 +138,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getBranchId(): ?Branch
+    public function getBranch(): ?Branch
     {
-        return $this->branch_id;
+        return $this->branch;
     }
 
-    public function setBranchId(?Branch $branch_id): static
+    public function setBranch(?Branch $branch): static
     {
-        $this->branch_id = $branch_id;
+        $this->branch = $branch;
 
         return $this;
     }

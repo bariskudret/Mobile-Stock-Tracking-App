@@ -106,7 +106,7 @@ class Product
     {
         if (!$this->branchProducts->contains($branchProduct)) {
             $this->branchProducts->add($branchProduct);
-            $branchProduct->setProductId($this);
+            $branchProduct->setProduct($this);
         }
 
         return $this;
@@ -116,8 +116,8 @@ class Product
     {
         if ($this->branchProducts->removeElement($branchProduct)) {
             // set the owning side to null (unless already changed)
-            if ($branchProduct->getProductId() === $this) {
-                $branchProduct->setProductId(null);
+            if ($branchProduct->getProduct() === $this) {
+                $branchProduct->setProduct(null);
             }
         }
 

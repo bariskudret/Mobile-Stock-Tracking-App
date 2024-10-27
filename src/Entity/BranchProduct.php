@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\BranchProductRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: BranchProductRepository::class)]
 #[ApiResource]
@@ -16,8 +17,9 @@ class BranchProduct
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'branchProducts')]
-    private ?Branch $branch_id = null;
+    #[ORM\ManyToOne(targetEntity: Branch::class, inversedBy: 'branchProducts')]
+    #[Groups(['branchProduct:read', 'branchProduct:write'])]
+    private ?Branch $branch = null;
 
     #[ORM\ManyToOne(inversedBy: 'branchProducts')]
     private ?Product $product_id = null;
@@ -30,27 +32,28 @@ class BranchProduct
 
     public function getId(): ?int
     {
+        
         return $this->id;
     }
 
-    public function getBranchId(): ?Branch
+    public function getBranch(): ?Branch
     {
-        return $this->branch_id;
+        return $this->branch;
     }
 
-    public function setBranchId(?Branch $branch_id): static
+    public function setBranch(?Branch $branch_id): static
     {
-        $this->branch_id = $branch_id;
+        $this->branch = $branch_id;
 
         return $this;
     }
 
-    public function getProductId(): ?Product
+    public function getProduct(): ?Product
     {
         return $this->product_id;
     }
 
-    public function setProductId(?Product $product_id): static
+    public function setProduct(?Product $product_id): static
     {
         $this->product_id = $product_id;
 

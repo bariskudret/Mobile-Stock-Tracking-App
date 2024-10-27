@@ -6,24 +6,32 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\CompanyRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\Groups;
+
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: CompanyRepository::class)]
-#[ApiResource]
+#[ApiResource( 
+normalizationContext: ['groups' => ['company:read']],
+denormalizationContext: ['groups' => ['company:write']]
+)]
 class Company
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['company:read', 'branch:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50, nullable: true)]
+    #[Groups(['company:read', 'company:write', 'branch:read'])]
     private ?string $name = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $branchCount = null;
 
-    #[ORM\OneToMany(targetEntity: Branch::class, mappedBy: 'company_id')]
+    #[ORM\OneToMany(targetEntity: Branch::class, mappedBy: 'company')]
+    #[Groups(['company:read'])]
     private Collection $branches;
 
     public function __construct()
@@ -72,7 +80,7 @@ class Company
     {
         if (!$this->branches->contains($branch)) {
             $this->branches->add($branch);
-            $branch->setCompanyId($this);
+            $branch->setCompany($this);
         }
 
         return $this;
@@ -82,8 +90,8 @@ class Company
     {
         if ($this->branches->removeElement($branch)) {
             // set the owning side to null (unless already changed)
-            if ($branch->getCompanyId() === $this) {
-                $branch->setCompanyId(null);
+            if ($branch->getCompany() === $this) {
+                $branch->setCompany(null);
             }
         }
 
