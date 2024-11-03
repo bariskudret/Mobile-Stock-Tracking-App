@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import User from '../modals/User';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Giriş işlemi burada yapılacak, şimdilik sadece konsola yazalım
+    // Giriş işlemi burada yapılacak
     console.log(`Username: ${username}, Password: ${password}`);
-    navigation.navigate('Home');  // Başarılı giriş sonrası ana ekrana yönlendirme
+    navigation.navigate('Profile');  // Başarılı giriş sonrası yönlendirme
+
+    //const user = new User()
+    //.getUsername()
+
+
+
   };
 
   return (
@@ -37,6 +44,15 @@ const LoginScreen = ({ navigation }) => {
       <TouchableOpacity onPress={() => console.log('Şifremi Unuttum!')}>
         <Text style={styles.forgotPassword}>Şifremi Unuttum</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity 
+          style={styles.registerLinkText}
+          onPress={() => navigation.navigate('Register')}
+        >
+          <Text style={styles.registerLinkText}>
+            Hesabınız yoksa Kayıt olun
+          </Text>
+        </TouchableOpacity>
     </View>
   );
 };
@@ -77,6 +93,13 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontSize: 14,
   },
+  registerLinkText:{
+    color: '#4CAF50',
+    fontSize: 16,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+    margin: 13
+  }
 });
 
 export default LoginScreen;

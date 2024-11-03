@@ -4,7 +4,8 @@ export default class User {
         this.username = null;
         this.password = null;
         this.role = null;
-        this.branchId = null;
+        this.branch = null;
+        this.email = null;
     }
 
     getUsername()
@@ -39,10 +40,21 @@ export default class User {
 
     setBranch(branchID){
 
-        this.branchId = branchID;
+        this.branch = branchID;
         
         return this;
         
+    }
+
+    getEmail(){
+        
+        return this.email;
+    }
+
+    setEmail(email){
+
+        this.email = email;
+        return this;
     }
 
 }

@@ -26,7 +26,7 @@ export const getProduct = (id)=>{
     .then(response =>{
         return {
             data : response.data,
-            ok : response.ok,
+            ok : response.status>199 && response.status<300,
             status : response.status,
             statusText : response.statusText,
             message : 'succsess'   

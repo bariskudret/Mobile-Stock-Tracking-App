@@ -12,7 +12,7 @@ export const postUser = (user)=>{
         .then(response=>{
             return {
                 data: response.data,
-                ok: true,
+                ok: response.status >= 200 && response.status < 300,
                 status: response.status,
                 statusText: response.statusText,
                 message: 'success'

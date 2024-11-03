@@ -1,5 +1,5 @@
 import React , {useEffect, useState} from 'react';
-import { View , Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View , Text, FlatList, TouchableOpacity, StyleSheet ,TextInput } from 'react-native';
 import {getCompanies} from '../services/api/Company';
 import {getBranches} from '../services/api/Branch';
 import Company from '../modals/Company';
@@ -161,4 +161,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SelectBranchScreen;
+export default selectBrnachScreen;

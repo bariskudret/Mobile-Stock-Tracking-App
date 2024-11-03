@@ -4,6 +4,8 @@ export default class Branch{
         this.id = null;
         this.name = null;
         this.adress = null;
+        this.isOpen = null;
+        this.users = [];
     }
 
     setId(id){
@@ -31,5 +33,27 @@ export default class Branch{
 
     getAdress(){
         return this.adress;
+    }
+
+    getIsOpen()
+    {
+        return this.isOpen;
+    }
+
+    setIsOpen(isOpen){
+
+        this.isOpen = isOpen;
+        return this;
+    }
+
+    getUsers(){
+        
+        return this.users;
+    }
+
+    setUsers(employeeNumber){
+        
+        this.users = employeeNumber;
+        return this;
     }
 }
