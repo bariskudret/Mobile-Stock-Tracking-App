@@ -30,11 +30,14 @@ class Product
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updateAt = null;
 
-    #[ORM\OneToMany(targetEntity: BranchProduct::class, mappedBy: 'product_id')]
+    #[ORM\OneToMany(targetEntity: BranchProduct::class, mappedBy: 'product')]
     private Collection $branchProducts;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
     private ?Category $category = null;
+
+    #[ORM\ManyToOne(inversedBy: 'products')]
+    private ?OrderHistory $orderHistory = null;
 
     public function __construct()
     {
@@ -132,6 +135,18 @@ class Product
     public function setCategoryId(?Category $category): static
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function getOrderHistory(): ?OrderHistory
+    {
+        return $this->orderHistory;
+    }
+
+    public function setOrderHistory(?OrderHistory $orderHistory): static
+    {
+        $this->orderHistory = $orderHistory;
 
         return $this;
     }

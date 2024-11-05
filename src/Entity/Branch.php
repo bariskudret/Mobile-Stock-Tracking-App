@@ -39,10 +39,14 @@ class Branch
     #[Groups(['branch:read'])]
     private Collection $branchProducts;
 
+    #[ORM\OneToMany(targetEntity: OrderHistory::class, mappedBy: 'branch')]
+    private Collection $orderHistories;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
         $this->branchProducts = new ArrayCollection();
+        $this->orderHistories = new ArrayCollection();
     }
     public function getId(): ?int
     {
@@ -127,6 +131,36 @@ class Branch
             // set the owning side to null (unless already changed)
             if ($branchProduct->getBranch() === $this) {
                 $branchProduct->setBranch(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OrderHistory>
+     */
+    public function getOrderHistories(): Collection
+    {
+        return $this->orderHistories;
+    }
+
+    public function addOrderHistory(OrderHistory $orderHistory): static
+    {
+        if (!$this->orderHistories->contains($orderHistory)) {
+            $this->orderHistories->add($orderHistory);
+            $orderHistory->setBranch($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrderHistory(OrderHistory $orderHistory): static
+    {
+        if ($this->orderHistories->removeElement($orderHistory)) {
+            // set the owning side to null (unless already changed)
+            if ($orderHistory->getBranch() === $this) {
+                $orderHistory->setBranch(null);
             }
         }
 

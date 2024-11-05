@@ -9,13 +9,36 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Operations;
+use ApiPlatform\Metadata\Post;
+use App\Controller\UserController;
 
 use Doctrine\ORM\Mapping as ORM;
+use PHPUnit\Framework\Constraint\Operator;
 
 #[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']]
 )]
+
+#[ApiResource(
+    operations: [
+        new Post(
+            uriTemplate: '/login',
+            controller: UserController::class . '::login',
+        )
+    ]
+)]
+#[ApiResource(
+    operations:[
+        new Post(
+        uriTemplate:'register',
+        controller: UserController::class . '::register'
+    )
+    ]
+)]
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -30,7 +53,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write', 'branch:read'])]
     private ?string $username = null;
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 255)]
     #[Groups(['user:read', 'user:write'])]
     private ?string $password = null;
 
@@ -44,6 +67,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\ManyToOne(targetEntity: Branch::class, inversedBy: 'users')]
     #[Groups(['user:read', 'user:write'])]
     private ?Branch $branch = null;
+
+    #[Groups(['user:read' , 'user:write'])]
+    #[ORM\Column(length: 150, nullable: true)]
+    private ?string $email = null;
 
     public function __construct()
     {
@@ -146,6 +173,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setBranch(?Branch $branch): static
     {
         $this->branch = $branch;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
 
         return $this;
     }
