@@ -1,44 +1,41 @@
 import React from 'react';
 import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useSettings } from '../context/SettingsContext';
+import { useNavigation } from '../context/NavigationContext';
 
 const NavigationBar = ({ navigation }) => {
-  const { setIsSettingsVisible } = useSettings();
+  const { setIsSettingsVisible } = useNavigation();
+
+  const handleSettingsPress = () => {
+    setIsSettingsVisible(true); // Settings sayfasına yönlendirmek yerine drawer'ı açıyoruz
+  };
 
   return (
     <View style={styles.navbar}>
+            <TouchableOpacity 
+        style={styles.navItem} 
+        onPress={handleSettingsPress}  // Yeni handler'ı kullanıyoruz
+      >
+        <MaterialIcons name="settings" size={24} color="#666" />
+        <Text style={styles.navText}>Ayarlar</Text>
+      </TouchableOpacity>
       <TouchableOpacity 
         style={styles.navItem}
         onPress={() => navigation.navigate('Product')}
       >
         <MaterialIcons name="inventory" size={24} color="#666" />
-        <Text style={styles.navText}>Product</Text>
+        <Text style={styles.navText}>Ürünler</Text>
       </TouchableOpacity>
 
       <TouchableOpacity 
         style={styles.navItem}
         onPress={() => navigation.navigate('Profile')}
       >
-        <MaterialIcons name="person" size={24} color="#666" />
-        <Text style={styles.navText}>Profile</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity 
-        style={styles.navItem}
-        onPress={() => navigation.navigate('SelectBranch')}
-      >
         <MaterialIcons name="business" size={24} color="#666" />
-        <Text style={styles.navText}>Branch</Text>
+        <Text style={styles.navText}>Ana Sayfa</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity 
-        style={styles.navItem} 
-        onPress={() => setIsSettingsVisible(true)}
-      >
-        <MaterialIcons name="settings" size={24} color="#666" />
-        <Text style={styles.navText}>Settings</Text>
-      </TouchableOpacity>
+
     </View>
   );
 };

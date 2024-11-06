@@ -1,21 +1,37 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import User from '../modals/User';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {PostLoginUser} from '../services/api/User';
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleLogin = () => {
-    // Giriş işlemi burada yapılacak
+  const handleLogin = async() => {
+    try{
     console.log(`Username: ${username}, Password: ${password}`);
-    navigation.navigate('Profile');  // Başarılı giriş sonrası yönlendirme
+    
 
-    //const user = new User()
-    //.getUsername()
+      user = new User()
+      .setUsername(username)
+      .setPassword(password)
+      
+    const response = await PostLoginUser(user);
 
+    console.log(JSON.stringify(response.data) , response.ok);
 
+    if(response.ok){
 
+      await AsyncStorage.setItem('userId' , JSON.stringify(response.data.id));
+      navigation.navigate('Profile');  // Başarılı giriş sonrası yönlendirme
+    }
+     else {
+      Alert.alert('Hata', data.error || 'Giriş başarısız');
+    }
+    }catch(error){
+      throw new error;
+    }
   };
 
   return (
@@ -103,3 +119,19 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+
+ /* const response = await fetch('http://192.168.1.110:8000/api/login',{
+    method:'POST',
+    headers:{
+      'Content-Type': 'application/json',
+      'Accept' : 'application/json',
+    },
+    body:JSON.stringify({
+      username : username,
+      password : password
+
+    })
+  });*/ 
+
+  //const data = await response.json();

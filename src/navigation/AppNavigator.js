@@ -5,7 +5,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ProductScreen from '../screens/ProductScreen';
 import NavigationBar from '../components/NavigationBar';
 import SettingsDrawer from '../components/SettingsDrawer';
-import { SettingsProvider } from '../context/SettingsContext';
+import { SettingsProvider } from '../context/NavigationContext';
 
 const Stack = createStackNavigator();
 

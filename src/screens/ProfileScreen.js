@@ -7,6 +7,7 @@ import { getBranches, getBranch } from '../services/api/Branch';
 import { getCompany } from '../services/api/Company';
 import Branch from '../modals/Branch';
 import Company from '../modals/Company';
+import NavigationBar from '../components/NavigationBar';
 
 const ProfileScreen = ({ navigation }) => {
   const [user, setUser] = useState(null);
@@ -16,6 +17,7 @@ const ProfileScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
+        
         const userId = await AsyncStorage.getItem('userId');
         console.log("user id:>>"+ userId);
         if (userId) {
@@ -161,32 +163,7 @@ const ProfileScreen = ({ navigation }) => {
           </View>
         )}
       </ScrollView>
-      
-      <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={styles.navItem} 
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <MaterialIcons name="settings" size={24} color="#666" />
-          <Text style={styles.navText}>Settings</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <MaterialIcons name="home" size={24} color="#666" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.navItem}
-          onPress={() => navigation.navigate('Product')}
-        >
-          <MaterialIcons name="inventory" size={24} color="#666" />
-          <Text style={styles.navText}>Product</Text>
-        </TouchableOpacity>
-      </View>
+      <NavigationBar navigation={navigation} /> 
     </View>
   );
 };
@@ -195,6 +172,7 @@ const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+    paddingBottom: 60,
   },
   container: {
     flex: 1,
