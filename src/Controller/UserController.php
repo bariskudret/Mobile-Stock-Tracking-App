@@ -5,6 +5,7 @@ use App\Entity\Branch;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use SebastianBergmann\Environment\Console;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,9 +30,9 @@ class UserController extends AbstractController
 
         $existingUser = $em->getRepository(User::class)->findOneBy(['username' => $username]);
 
-        if ($existingUser) {
+        if ($existingUser) 
             return new JsonResponse(['error' => 'Username already exists.'], 400);
-        }
+        
 
         $user = new User();
         $user->setUsername($username);
@@ -39,7 +40,7 @@ class UserController extends AbstractController
         // Şifreyi güvenli bir şekilde hashlemek
         $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
         dump('Normal Şifre : ' , $data['password']);
-        dump('Hashlanmiş şifre :', $hashedPassword);
+        dump('Hashlenmiş şifre :', $hashedPassword);
 
         $user->setPassword($hashedPassword);
 
@@ -53,11 +54,20 @@ class UserController extends AbstractController
             return new JsonResponse(['error' => 'Branch not found'], 404);
         }
         $user->setBranch($branch);
-        
+
         $em->persist($user);
         $em->flush();
 
-        return new JsonResponse(['message' => 'User registered successfully.']);
+        return new JsonResponse(['message' => 'User registered successfully.',
+        'username'=> $user->getUsername(),
+        'role'=> $user->getRole(),
+        'email'=> $user->getEmail(),
+        'id'=> $user->getId(),
+        'brnach'=> [
+            'id' => $user->getBranch()->getId(),
+            'name' => $user->getBranch()->getName()
+        ],
+        ]);
     }
 
     
@@ -82,16 +92,27 @@ class UserController extends AbstractController
         $loginUser = $em->getRepository(User::class)->findOneBy(['username' => $username]);
 
         if(!$loginUser){
-            return new jsonResponse(['error' => ' Invalid credentialsss'], 401);
+            return new jsonResponse(['error' => ' Invalid credentials'], 401);
         }
-
+        
         // password controller
         if(!$this->passwordHasher->isPasswordValid($loginUser, $password)){
             var_dump(['error' => ' Invalid credentials']);
-            return new jsonResponse(['error' => ' Invalid credebtialls'], 401);
+            return new jsonResponse(['error' => ' Invalid credebtials'], 401);
         }
 
-        return new JsonResponse(['message' => 'Login successful.']);
+        return new JsonResponse(['message' => 'Login successful.',
+        
+            'username'=> $loginUser->getUsername(),
+            'role'=> $loginUser->getRole(),
+            'email'=> $loginUser->getEmail(),
+            'id'=> $loginUser->getId(),
+            'brnach'=> [
+                'id' => $loginUser->getBranch()->getId(),
+                'name' => $loginUser->getBranch()->getName()
+            ],
+        ]
+            );
     }
 
 }

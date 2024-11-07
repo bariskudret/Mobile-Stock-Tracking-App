@@ -27,6 +27,7 @@ use PHPUnit\Framework\Constraint\Operator;
         new Post(
             uriTemplate: '/login',
             controller: UserController::class . '::login',
+            denormalizationContext: ['groups'=> ['user:login']]
         )
     ]
 )]
@@ -34,7 +35,8 @@ use PHPUnit\Framework\Constraint\Operator;
     operations:[
         new Post(
         uriTemplate:'register',
-        controller: UserController::class . '::register'
+        controller: UserController::class . '::register',
+        denormalizationContext: ['groups'=>['user:register']]
     )
     ]
 )]
@@ -50,25 +52,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
-    #[Groups(['user:read', 'user:write', 'branch:read'])]
+    #[Groups(['user:read', 'user:write', 'branch:read' , 'user:login' , 'user:register'])] //username login , register post atarken gerekli alandır
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write' ,'user:login', 'user:register'])]//login post atarken gerekli
     private ?string $password = null;
 
     #[ORM\Column(length: 10)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write' , 'user:register'])]
     private ?string $role = null;
 
     #[ORM\OneToMany(targetEntity: StockMovement::class, mappedBy: 'owner')]
     private Collection $stockMovements;
 
     #[ORM\ManyToOne(targetEntity: Branch::class, inversedBy: 'users')]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write' , 'user:register'])]
     private ?Branch $branch = null;
 
-    #[Groups(['user:read' , 'user:write'])]
+    #[Groups(['user:read' , 'user:write' , 'user:register'])]
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $email = null;
 
