@@ -5,9 +5,9 @@ import { useNavigation } from '../context/NavigationContext';
 
 const NavigationBar = ({ navigation }) => {
   const { setIsSettingsVisible } = useNavigation();
-
+    
   const handleSettingsPress = () => {
-    setIsSettingsVisible(true); // Settings sayfasına yönlendirmek yerine drawer'ı açıyoruz
+    setIsSettingsVisible(navigation); // Settings sayfasına yönlendirmek yerine drawer'ı açıyoruz
   };
 
   return (

@@ -1,13 +1,16 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation  } from '../context/NavigationContext';
+
 import { getUser } from '../services/api/User';
 
-const SettingsDrawer = ({ navigation }) => {
+const SettingsDrawer = () => {
+  
   const { isSettingsVisible, setIsSettingsVisible } = useNavigation();
+  //navigation = isSettingsVisible;
   const [drawerAnimation] = useState(new Animated.Value(-300));
   const [user, setUser] = useState(null);
 
@@ -53,7 +56,7 @@ const SettingsDrawer = ({ navigation }) => {
     try {
       await AsyncStorage.removeItem('userId');
       setIsSettingsVisible(false);
-      navigation.replace('Login');
+      isSettingsVisible.navigate('Login');
     } catch (error) {
       console.error('Çıkış hatası:', error);
     }

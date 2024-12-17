@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Image, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView, Alert, Image, Dimensions, Modal } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { getBranch } from '../services/api/Branch';
 import { getProduct } from '../services/api/Product';
 import Product from '../modals/Product';
-import { getBranchProducts } from '../services/api/BranchProduct';
+import { getBranchProducts , getfilterProduct } from '../services/api/BranchProduct';
 import { getCategory } from '../services/api/Category';
+import NavigationBar from '../components/NavigationBar';
+import { useNavigation } from '../context/NavigationContext';
+import FilterDrawer from '../components/FilterDrawer';
 
 const { width } = Dimensions.get('window');
 const PRODUCT_WIDTH = (width - 48) / 2; // 2 sütunlu görünüm için genişlik hesaplama
@@ -18,7 +21,12 @@ const ProductScreen = ({ route, navigation }) => {
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  let [filteredProducts, setFilteredProducts] = useState([]);
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+  const { isFilterVisible, setIsFilterVisible, setApplyFiltersFunction} = useNavigation();
+ 
+  
+  
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -64,12 +72,12 @@ const ProductScreen = ({ route, navigation }) => {
 
             // Kategori ID çıkarma kontrolü
             let categoryId;
-            if (typeof productResponse.data.categoryId === 'string') {
-              categoryId = productResponse.data.categoryId.split('/').pop();
-            } else if (productResponse.data.categoryId && productResponse.data.categoryId.id) {
-              categoryId = productResponse.data.categoryId.id;
+            if (typeof productResponse.data.category === 'string') {
+              categoryId = productResponse.data.category.split('/').pop();
+            } else if (productResponse.data.category && productResponse.data.category.id) {
+              categoryId = productResponse.data.category.id;
             } else {
-              console.log('Geçersiz kategori yapısı:', productResponse.data.categoryId);
+              console.log('Geçersiz kategori yapısı:', productResponse.data.category);
               return null;
             }
 
@@ -100,7 +108,6 @@ const ProductScreen = ({ route, navigation }) => {
 
         // Tüm promise'ları çözümleyelim
         const productList = (await Promise.all(productPromises)).filter(product => product !== null);
-        console.log('İşlenmiş Ürün Listesi:', productList);
 
         if (productList.length > 0) {
           setProducts(productList);
@@ -124,16 +131,110 @@ const ProductScreen = ({ route, navigation }) => {
         setLoading(false);
       }
     };
-
+    
     fetchData();
+
+      // handledApplyFilters fonksiyonunu context'e kaydet
+      setApplyFiltersFunction(() => handledApplyFilters);
   }, [branchId]);
-
   
+  const handledApplyFilters = async (filterData) => {
+    try {
+      // API'ye filtre verilerini gönder
+      const response = await getfilterProduct(filterData);
+      console.log('Filtreleme Sonucu:', response.data);
+  
+      if (response.data && Array.isArray(response.data)) {
+        const processedFilteredProducts = await Promise.all(
+          response.data.map(async (branchProduct) => {
+            try {
+              // Product ID çıkarma
+              const productId = branchProduct.product?.id || 
+                                (typeof branchProduct.product === 'string' 
+                                 ? branchProduct.product.split('/').pop() 
+                                 : null);
+  
+              if (!productId) {
+                console.warn('Geçersiz ürün ID si:', branchProduct);
+                return null;
+              }
+  
+              // Ürün bilgilerini çek
+              const productResponse = await getProduct(productId);
+              // Kategori ID çıkarma - yapıyı değiştirdik
+              const categoryId = productResponse.data.category?.id || 
+              (typeof productResponse.data.category === 'string' 
+               ? productResponse.data.category.split('/').pop() 
+               : null);
 
-  const filteredProducts = products.filter(product => 
-    (!selectedCategory || product.getCategory() === selectedCategory) &&
-    (searchText === '' || product.getName().toLowerCase().includes(searchText.toLowerCase()))
-  );
+              if (!categoryId) {
+              console.warn('Geçersiz kategori ID si:', productResponse.data);
+              return null;
+              }
+  
+              // Kategori bilgilerini çek
+              const categoryResponse = await getCategory(categoryId);
+  
+              return new Product()
+                .setName(productResponse.data.name || 'İsimsiz Ürün')
+                .setPrice(branchProduct.price || 0)
+                .setDescription(productResponse.data.description || '')
+                .setStockQuantity(branchProduct.stockQuantity || 0)
+                .setCategory(categoryResponse.data.name || 'Kategorisiz');
+  
+            } catch (error) {
+              console.error('Ürün işleme hatası:', error);
+              return null;
+            }
+          })
+        );
+  
+        // Null olmayan ürünleri filtrele
+        const validProducts = processedFilteredProducts.filter(product => product !== null);
+  
+        // Filtrelenmiş ürünleri state'e kaydet
+        setFilteredProducts(validProducts);
+        setIsFilterApplied(true);
+        setIsFilterVisible(false);
+        
+        if (validProducts.length === 0) {
+          Alert.alert('Uyarı', 'Filtreleme sonucunda ürün bulunamadı.');
+        }
+  
+      } else {
+        setFilteredProducts([]);
+        Alert.alert('Uyarı', 'Filtreleme sonucunda ürün bulunamadı.');
+      }
+    } catch (error) {
+      console.error('Filtreleme hatası:', error);
+      Alert.alert('Hata', 'Ürünler filtrelenirken bir sorun oluştu.');
+      setFilteredProducts([]);
+    }
+  };
+
+    // NEW: Function to clear filters
+    const clearFilters = () => {
+      setIsFilterApplied(false);
+      setFilteredProducts([]);
+      setSelectedCategory(categories[0] || null);
+      setSearchText('');
+    };
+
+  const handleFilterPress = () => {
+    setIsFilterVisible(true);
+  };
+  
+  const displayProducts = isFilterApplied ? filteredProducts : 
+    products.filter(product => 
+      (!selectedCategory || product.getCategory() === selectedCategory) &&
+      (searchText === '' || product.getName().toLowerCase().includes(searchText.toLowerCase()))
+    );
+  
+  //değiştirildi 'const'
+  //  filteredProducts = products.filter(product => 
+  //   (!selectedCategory || product.getCategory() === selectedCategory) &&
+  //   (searchText === '' || product.getName().toLowerCase().includes(searchText.toLowerCase()))
+  // );
 
   const ProductCard = ({ product }) => (
     <View style={styles.productCard}>
@@ -163,8 +264,10 @@ const ProductScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       {/* Arama Başlığı */}
       <View style={styles.searchSection}>
-        <MaterialIcons name="menu" size={24} color="black" style={styles.menuIcon} />
-        <Text style={styles.stockText}>Stok</Text>
+      <TouchableOpacity style={styles.button} onPress={handleFilterPress}>
+      <MaterialIcons name="tune" size={30} color="black" style={styles.menuIcon} />
+        <Text style={styles.StockText}>Filitre     </Text>
+      </TouchableOpacity>
         <View style={styles.searchBox}>
           <TextInput
             style={styles.searchInput}
@@ -175,13 +278,13 @@ const ProductScreen = ({ route, navigation }) => {
           <MaterialIcons name="search" size={24} color="gray" />
         </View>
       </View>
-
       {/* Şube Bilgisi ve İşlem Butonları */}
       <View style={styles.branchSection}>
         <Text style={styles.branchId}>Şube ID: {branchId}</Text>
         <View style={styles.buttonContainer}>
         <Text>Ürün</Text>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton}
+          onPress={()=>navigation.navigate('AddProduct', { branchId:branchId})}>
             <Text style={styles.buttonText}>Ekle</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.deleteButton}>
@@ -190,40 +293,56 @@ const ProductScreen = ({ route, navigation }) => {
         </View>
       </View>
 
-      {/* Kategoriler */}
-      <View style={styles.categoryContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {categories.map((category, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.selectedCategory,
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === category && styles.selectedCategoryText,
-              ]}>
-                {category}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+      {/* Kategoriler Only show when filters are not applied */}
+      <View style={styles.categorySection}>
+        {isFilterApplied ? (
+          <TouchableOpacity style={styles.clearFilterButton} onPress={clearFilters}>
+            <MaterialIcons name="clear" size={24} color="white" />
+            <Text style={styles.clearFilterText}>Filtreleri Temizle</Text>
+          </TouchableOpacity>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {categories.map((category, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.categoryButton,
+                  selectedCategory === category && styles.selectedCategory,
+                ]}
+                onPress={() => setSelectedCategory(category)}
+              >
+                <Text style={[
+                  styles.categoryText,
+                  selectedCategory === category && styles.selectedCategoryText,
+                ]}>
+                  {category}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
       </View>
-
-      {/* Ürün Listesi */}
-      <ScrollView 
-        style={styles.productsContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      
+      {/* Ürün Listesi  */} 
+      <ScrollView
+       style={{ marginBottom: 80 , marginTop:20 }}>
         <View style={styles.productsGrid}>
-          {filteredProducts.map((product, index) => (
+          {displayProducts.map((product, index) => (
             <ProductCard key={index} product={product} />
           ))}
         </View>
       </ScrollView>
+
+        {/* FilterDrawer'a onApplyFilters prop'unu geçirin */}
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isFilterVisible}
+        onRequestClose={() => setIsFilterVisible(false)}
+      >
+        <FilterDrawer />
+      </Modal>
+      <NavigationBar navigation={navigation} /> 
     </View>
   );
 };
@@ -232,11 +351,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },categorySection: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: 16,
+  },
+  clearFilterButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f44336',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  clearFilterText: {
+    color: 'white',
+    fontWeight: '500',
+    marginLeft: 8,
   },
   searchSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    padding: 18,
+    paddingTop: 25,
     backgroundColor: '#fff',
     elevation: 2,
   },
@@ -258,7 +397,7 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 15,
   },
   branchSection: {
     flexDirection: 'row',
@@ -279,7 +418,7 @@ const styles = StyleSheet.create({
   addButton: {
     backgroundColor: '#4CAF50',
     paddingHorizontal: 20,
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderRadius: 20,
   },
   deleteButton: {
@@ -334,7 +473,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: PRODUCT_WIDTH,
+    height: PRODUCT_WIDTH-10,
     backgroundColor: '#f5f5f5',
   },
   productImage: {

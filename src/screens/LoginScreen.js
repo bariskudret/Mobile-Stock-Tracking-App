@@ -23,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
 
     if(response.ok){
 
-      await AsyncStorage.setItem('userId' , JSON.stringify(response.data.id));
+      await AsyncStorage.setItem('userId' , response.data.id.toString());
       navigation.navigate('Profile');  // Başarılı giriş sonrası yönlendirme
     }
      else {
@@ -120,18 +120,3 @@ const styles = StyleSheet.create({
 
 export default LoginScreen;
 
-
- /* const response = await fetch('http://192.168.1.110:8000/api/login',{
-    method:'POST',
-    headers:{
-      'Content-Type': 'application/json',
-      'Accept' : 'application/json',
-    },
-    body:JSON.stringify({
-      username : username,
-      password : password
-
-    })
-  });*/ 
-
-  //const data = await response.json();

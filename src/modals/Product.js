@@ -6,8 +6,19 @@ export default class products{
         this.price = null;
         this.description = null;
         this.stockQuantity = null;
-        this.catgory = null;
+        this.category = null; //category_id
+        this.updateAt = null;
+        this.createdAt = null;
+    }
 
+    setUpdateAt(){
+        this.updateAt = new Date().toISOString();
+        return this;
+    }
+    setCreateAt(){
+
+        this.createdAt = new Date().toISOString();
+        return this;
     }
 
     getName(){

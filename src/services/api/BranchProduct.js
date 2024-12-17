@@ -1,7 +1,7 @@
 import ApiController from "./ApiController";
 
 
-export const   getBranchProducts = (brnachId)=>{
+export const getBranchProducts = (brnachId)=>{
 
     return ApiController.get(`/branches/${brnachId}/branch_products`)
     .then(Response =>{
@@ -24,10 +24,31 @@ export const   getBranchProducts = (brnachId)=>{
     })
 
 }
+export const getfilterProduct=(filterData)=>{
+    return ApiController.get(`/branch_products?page=1&${filterData}`)
+    .then(Response=>{
+        return {
+            data : Response.data,
+            ok : Response.status >199 && Response.status<300,
+            status : Response.status,
+            statusText : Response.statusText,
+            mesagge : 'success'
+        }
+    })    
+    .catch(error=>{
+        return {
+            mesagge : error.mesagge,
+            ok : false,
+            status: 500
 
-export const   postBranchProducts = (branchProduct)=>{
+        }
+    })
+}
 
-    return ApiController.post('/BranchProduct', JSON.stringify(branchProduct))
+
+export const createBranchProduct = (branchProduct)=>{
+
+    return ApiController.post('/branch_products', JSON.stringify(branchProduct))
     .then(Response =>{
 
         return {

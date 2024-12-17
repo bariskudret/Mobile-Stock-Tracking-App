@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+
+//bu alan şuan kullanılmıyor
+/*import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -200,4 +202,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default SettingsScreen;
+export default SettingsScreen;*/
