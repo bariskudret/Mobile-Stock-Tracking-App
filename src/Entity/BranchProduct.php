@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\BranchProductRepository;
 use Doctrine\DBAL\Types\Types;
@@ -9,6 +10,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 
 #[ORM\Entity(repositoryClass: BranchProductRepository::class)]
 #[ApiResource(
@@ -37,6 +40,15 @@ use ApiPlatform\Metadata\GetCollection;
     ],
     operations: [new GetCollection()]
 )]
+
+#[ApiFilter(SearchFilter::class , properties :[
+    'product.category.name'=>'partial'
+])]
+
+#[ApiFilter(RangeFilter::class , properties:[
+    'stockQuantity',
+    'price'
+])]
 class BranchProduct
 {
     #[ORM\Id]

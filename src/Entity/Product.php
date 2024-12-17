@@ -8,35 +8,64 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
+use ApiPlatform\Doctrine\Orm\Filter\NumericFilter;
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
-#[ApiResource]
+
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+// #[ApiFilter(filterClass: NumericFilter::class, properties : ['id', 'category.id'])]
+// #[ApiFilter(filterClass: SearchFilter::class, properties: [
+//     'name' => 'partial',
+//     'description' => 'partial',
+// ])]
+
+#[ApiResource(
+    normalizationContext:['groups'=>['product:read']],
+    denormalizationContext:['groups'=>['product:write']],
+)]
 class Product
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['product:read','product:write'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 50)]
+    #[Groups(['product:read' , 'product:write'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Groups(['product:read' , 'product:write'])]
     private ?string $description = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['product:read' , 'product:write'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    #[Groups(['product:read' , 'product:write'])]
     private ?\DateTimeInterface $updateAt = null;
 
     #[ORM\OneToMany(targetEntity: BranchProduct::class, mappedBy: 'product')]
+    #[Groups(['product:read'])]
     private Collection $branchProducts;
 
+    #[Groups(['product:read' , 'product:write'])]
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'products')]
     private ?Category $category = null;
 
+   
     #[ORM\ManyToOne(inversedBy: 'products')]
+    #[Groups(['product:read'])]
     private ?OrderHistory $orderHistory = null;
 
     public function __construct()
@@ -127,12 +156,12 @@ class Product
         return $this;
     }
 
-    public function getCategoryId(): ?Category
+    public function getCategory(): ?Category
     {
         return $this->category;
     }
 
-    public function setCategoryId(?Category $category): static
+    public function setCategory(?Category $category): static
     {
         $this->category = $category;
 

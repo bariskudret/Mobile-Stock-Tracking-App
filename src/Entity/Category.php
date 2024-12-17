@@ -8,9 +8,21 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\NumericFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ApiResource]
+
 #[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ApiResource]
+#[ApiFilter(SearchFilter::class , properties : [
+    'name' => 'partial'
+])]
+
+// #[ApiFilter(NumericFilter::class , properties:[
+//     'id'=>''
+// ])]
 class Category
 {
     #[ORM\Id]
@@ -73,7 +85,7 @@ class Category
     {
         if (!$this->products->contains($product)) {
             $this->products->add($product);
-            $product->setCategoryId($this);
+            $product->setCategory($this);
         }
 
         return $this;
@@ -83,8 +95,8 @@ class Category
     {
         if ($this->products->removeElement($product)) {
             // set the owning side to null (unless already changed)
-            if ($product->getCategoryId() === $this) {
-                $product->setCategoryId(null);
+            if ($product->getCategory() === $this) {
+                $product->setCategory(null);
             }
         }
 

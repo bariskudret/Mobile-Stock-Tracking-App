@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
@@ -13,7 +15,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Operations;
 use ApiPlatform\Metadata\Post;
 use App\Controller\UserController;
-
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Doctrine\ORM\Mapping as ORM;
 use PHPUnit\Framework\Constraint\Operator;
 
@@ -38,6 +40,12 @@ use PHPUnit\Framework\Constraint\Operator;
         controller: UserController::class . '::register',
         denormalizationContext: ['groups'=>['user:register']]
     )
+    ]
+)]
+#[ApiFilter(
+    filterClass: SearchFilter::class, 
+    properties: [
+        'username' => 'partial'
     ]
 )]
 
